@@ -1,17 +1,35 @@
 Class {
 	#name : #WeakOperatorsFinder,
 	#superclass : #Object,
+	#instVars : [
+		'classesToMutate',
+		'testCases'
+	],
 	#category : #'MuTalk-Utilities'
 }
 
-{ #category : #'as yet unclassified' }
-WeakOperatorsFinder >> minimalMutantsNumber [
+{ #category : #'instance creation' }
+WeakOperatorsFinder class >> for: classesToMutate tests: testCases [
 
-	^ 10
+	^ self new
+		  classesToMutate: classesToMutate;
+		  testCases: testCases
 ]
 
-{ #category : #'as yet unclassified' }
-WeakOperatorsFinder >> weakOperatorsFor: classesToMutate tests: testCases [
+{ #category : #accessing }
+WeakOperatorsFinder >> classesToMutate [
+
+	^ classesToMutate
+]
+
+{ #category : #accessing }
+WeakOperatorsFinder >> classesToMutate: classes [
+
+	classesToMutate := classes
+]
+
+{ #category : #computing }
+WeakOperatorsFinder >> find [
 
 	| analysis dic operators operatorsWithoutMutants |
 	analysis := MutationTestingAnalysis
@@ -21,7 +39,7 @@ WeakOperatorsFinder >> weakOperatorsFor: classesToMutate tests: testCases [
 		            with: AllTestsMethodsRunningTestSelectionStrategy new
 		            with: AllMutantSelectionStrategy new.
 
-	analysis run.
+	analysis generateMutations.
 
 	dic := analysis mutations groupedBy: [ :e | e operator ].
 
@@ -33,4 +51,22 @@ WeakOperatorsFinder >> weakOperatorsFor: classesToMutate tests: testCases [
 			                           includes: ope species ].
 	operatorsWithoutMutants do: [ :op | operators add: op -> 0 ].
 	^ operators
+]
+
+{ #category : #accessing }
+WeakOperatorsFinder >> minimalMutantsNumber [
+
+	^ 10
+]
+
+{ #category : #accessing }
+WeakOperatorsFinder >> testCases [
+
+	^ testCases
+]
+
+{ #category : #accessing }
+WeakOperatorsFinder >> testCases: tests [
+
+	testCases := tests
 ]
