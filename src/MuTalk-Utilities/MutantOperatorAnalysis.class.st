@@ -1,38 +1,43 @@
 Class {
 	#name : 'MutantOperatorAnalysis',
 	#superclass : 'Object',
-	#instVars : [
-		'classesToMutate',
-		'testCases'
-	],
 	#category : 'MuTalk-Utilities',
 	#package : 'MuTalk-Utilities'
 }
 
-{ #category : 'instance creation' }
-MutantOperatorAnalysis class >> for: classesToMutate tests: testCases [
+{ #category : 'computing' }
+MutantOperatorAnalysis >> findOperatorsWithoutMutantsFor: classesToMutate withTests: testCases [
 
-	^ self new
-		  classesToMutate: classesToMutate;
-		  testCases: testCases
-]
+	| operatorsDictionary operatorsWithoutMutants |
+	operatorsDictionary := self
+		                       getMutantOperatorsDictionaryFor:
+		                       classesToMutate
+		                       withTests: testCases.
 
-{ #category : 'accessing' }
-MutantOperatorAnalysis >> classesToMutate [
-
-	^ classesToMutate
-]
-
-{ #category : 'accessing' }
-MutantOperatorAnalysis >> classesToMutate: classes [
-
-	classesToMutate := classes
+	^ operatorsWithoutMutants := MutantOperator contentsAll reject: [
+		                             :ope |
+		                             (operatorsDictionary keys collect: [ :e |
+			                              e species ]) includes: ope species ]
 ]
 
 { #category : 'computing' }
-MutantOperatorAnalysis >> findWeakOperators [
+MutantOperatorAnalysis >> findWeakOperatorsFor: classesToMutate withTests: testCases [
 
-	| analysis dic operators operatorsWithoutMutants |
+	| operatorsDictionary weakOperators |
+	operatorsDictionary := self
+		                       getMutantOperatorsDictionaryFor:
+		                       classesToMutate
+		                       withTests: testCases.
+
+	^ weakOperators := (operatorsDictionary collect: [ :coll | coll size ])
+		                   select: [ :value |
+		                   value <= self minimalMutantsNumber ]
+]
+
+{ #category : 'computing' }
+MutantOperatorAnalysis >> getMutantOperatorsDictionaryFor: classesToMutate withTests: testCases [
+
+	| analysis dic |
 	analysis := MutationTestingAnalysis
 		            testCasesFrom: testCases
 		            mutating: classesToMutate
@@ -42,16 +47,7 @@ MutantOperatorAnalysis >> findWeakOperators [
 
 	analysis generateMutations.
 
-	dic := analysis mutations groupedBy: [ :e | e operator ].
-
-	operators := (dic collect: [ :coll | coll size ]) select: [ :value |
-		             value <= self minimalMutantsNumber ].
-
-	operatorsWithoutMutants := MutantOperator contentsAll reject: [ :ope |
-		                           (dic keys collect: [ :e | e species ])
-			                           includes: ope species ].
-	operatorsWithoutMutants do: [ :op | operators add: op -> 0 ].
-	^ operators
+	^ dic := analysis mutations groupedBy: [ :e | e operator ]
 ]
 
 { #category : 'accessing' }
@@ -75,16 +71,4 @@ MutantOperatorAnalysis >> operatorIntersectionFor: aCollection [
 		                      each keys collect: #species ].
 	^ operatorCollection fold: [ :collection1 :collection2 |
 		  collection1 intersection: collection2 ]
-]
-
-{ #category : 'accessing' }
-MutantOperatorAnalysis >> testCases [
-
-	^ testCases
-]
-
-{ #category : 'accessing' }
-MutantOperatorAnalysis >> testCases: tests [
-
-	testCases := tests
 ]
