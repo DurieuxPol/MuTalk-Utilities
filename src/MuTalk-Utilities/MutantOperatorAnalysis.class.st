@@ -6,38 +6,50 @@ Class {
 }
 
 { #category : 'computing' }
-MutantOperatorAnalysis >> findOperatorsWithoutMutantsFor: classesToMutate withTests: testCases [
+MutantOperatorAnalysis >> completeAnalysisFor: aCollectionOfPackages [
 
-	| operatorsDictionary operatorsWithoutMutants |
-	operatorsDictionary := self
-		                       getMutantOperatorsDictionaryFor:
-		                       classesToMutate
-		                       withTests: testCases.
+	| allOperatorsDictionary |
+	allOperatorsDictionary := Dictionary new.
 
-	^ operatorsWithoutMutants := MutantOperator contentsAll reject: [
-		                             :ope |
-		                             (operatorsDictionary keys collect: [ :e |
-			                              e species ]) includes: ope species ]
+	aCollectionOfPackages do: [ :name |
+		| operatorsDictionary |
+		operatorsDictionary := self getMutantOperatorsDictionaryFor: name.
+
+		allOperatorsDictionary addAllWithoutOverwrite:
+			(self findWeakOperatorsFor: operatorsDictionary).
+		allOperatorsDictionary addAllWithoutOverwrite:
+			(self findNullOperatorsFor: operatorsDictionary) ].
+
+	^ allOperatorsDictionary
 ]
 
 { #category : 'computing' }
-MutantOperatorAnalysis >> findWeakOperatorsFor: classesToMutate withTests: testCases [
+MutantOperatorAnalysis >> findNullOperatorsFor: aDictionary [
 
-	| operatorsDictionary weakOperators |
-	operatorsDictionary := self
-		                       getMutantOperatorsDictionaryFor:
-		                       classesToMutate
-		                       withTests: testCases.
+	| operatorsWithoutMutants |
+	operatorsWithoutMutants := (MutantOperator contentsAll collect:
+		                            #species) reject: [ :ope |
+		                           aDictionary keys includes: ope ].
 
-	^ weakOperators := (operatorsDictionary collect: [ :coll | coll size ])
-		                   select: [ :value |
-		                   value <= self minimalMutantsNumber ]
+	^ OrderedDictionary new
+		  addAll: (operatorsWithoutMutants collect: [ :each | each -> 0 ]);
+		  yourself
 ]
 
 { #category : 'computing' }
-MutantOperatorAnalysis >> getMutantOperatorsDictionaryFor: classesToMutate withTests: testCases [
+MutantOperatorAnalysis >> findWeakOperatorsFor: aDictionary [
 
-	| analysis dic |
+	^ aDictionary select: [ :value | value <= self minimalMutantsNumber ]
+]
+
+{ #category : 'computing' }
+MutantOperatorAnalysis >> getMutantOperatorsDictionaryFor: aName [
+
+	| analysis dic classesToMutate testCases |
+	classesToMutate := aName asPackage definedClasses.
+	testCases := (aName , '-Tests') asPackage definedClasses select:
+		             #isTestCase.
+
 	analysis := MutationTestingAnalysis
 		            testCasesFrom: testCases
 		            mutating: classesToMutate
@@ -47,28 +59,12 @@ MutantOperatorAnalysis >> getMutantOperatorsDictionaryFor: classesToMutate withT
 
 	analysis generateMutations.
 
-	^ dic := analysis mutations groupedBy: [ :e | e operator ]
+	^ dic := (analysis mutations groupedBy: [ :e | e operator species ])
+		         collect: [ :coll | coll size ]
 ]
 
 { #category : 'accessing' }
 MutantOperatorAnalysis >> minimalMutantsNumber [
 
 	^ 5
-]
-
-{ #category : 'enumerating' }
-MutantOperatorAnalysis >> operatorIntersectionBetween: collection1 and: collection2 [
-
-	^ (collection1 keys collect: #species) intersection:
-		  (collection2 keys collect: #species)
-]
-
-{ #category : 'enumerating' }
-MutantOperatorAnalysis >> operatorIntersectionFor: aCollection [
-
-	| operatorCollection |
-	operatorCollection := aCollection collect: [ :each |
-		                      each keys collect: #species ].
-	^ operatorCollection fold: [ :collection1 :collection2 |
-		  collection1 intersection: collection2 ]
 ]
