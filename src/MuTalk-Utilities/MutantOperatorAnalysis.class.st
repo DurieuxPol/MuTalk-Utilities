@@ -6,7 +6,7 @@ Class {
 }
 
 { #category : 'computing' }
-MutantOperatorAnalysis >> completeAnalysisFor: aCollectionOfPackages [
+MutantOperatorAnalysis >> allOperatorsFor: aCollectionOfPackages [
 
 	| allOperatorsDictionary |
 	allOperatorsDictionary := Dictionary new.
@@ -17,16 +17,16 @@ MutantOperatorAnalysis >> completeAnalysisFor: aCollectionOfPackages [
 
 		operatorsDictionary := operatorsDictionary asDictionary
 			                       addAllWithoutOverwrite:
-				                       (self findNullOperatorsFor:
+				                       (self findOperatorsWithoutMutantsFor:
 						                        operatorsDictionary);
 			                       yourself.
 		allOperatorsDictionary addAllWithoutOverwrite: operatorsDictionary ].
 
-	^ self findWeakOperatorsFor: allOperatorsDictionary
+	^ allOperatorsDictionary
 ]
 
 { #category : 'computing' }
-MutantOperatorAnalysis >> findNullOperatorsFor: aDictionary [
+MutantOperatorAnalysis >> findOperatorsWithoutMutantsFor: aDictionary [
 
 	| operatorsWithoutMutants |
 	operatorsWithoutMutants := (MutantOperator contentsAll collect:
@@ -36,12 +36,6 @@ MutantOperatorAnalysis >> findNullOperatorsFor: aDictionary [
 	^ OrderedDictionary new
 		  addAll: (operatorsWithoutMutants collect: [ :each | each -> 0 ]);
 		  yourself
-]
-
-{ #category : 'computing' }
-MutantOperatorAnalysis >> findWeakOperatorsFor: aDictionary [
-
-	^ aDictionary select: [ :value | value <= self minimalMutantsNumber ]
 ]
 
 { #category : 'computing' }
@@ -65,8 +59,24 @@ MutantOperatorAnalysis >> getMutantOperatorsDictionaryFor: aName [
 		         collect: [ :coll | coll size ]
 ]
 
-{ #category : 'accessing' }
-MutantOperatorAnalysis >> minimalMutantsNumber [
+{ #category : 'computing' }
+MutantOperatorAnalysis >> operatorsProducingOver: aNumber mutantsFor: aCollectionOfPackages [
 
-	^ 5
+	^ self
+		  operatorsSelectedWith: [ :value | value >= aNumber ]
+		  For: aCollectionOfPackages
+]
+
+{ #category : 'computing' }
+MutantOperatorAnalysis >> operatorsProducingUnder: aNumber mutantsFor: aCollectionOfPackages [
+
+	^ self
+		  operatorsSelectedWith: [ :value | value <= aNumber ]
+		  For: aCollectionOfPackages
+]
+
+{ #category : 'computing' }
+MutantOperatorAnalysis >> operatorsSelectedWith: aBlock For: aCollectionOfPackages [
+
+	^ (self allOperatorsFor: aCollectionOfPackages) select: aBlock
 ]
