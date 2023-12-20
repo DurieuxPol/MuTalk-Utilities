@@ -15,12 +15,14 @@ MutantOperatorAnalysis >> completeAnalysisFor: aCollectionOfPackages [
 		| operatorsDictionary |
 		operatorsDictionary := self getMutantOperatorsDictionaryFor: name.
 
-		allOperatorsDictionary addAllWithoutOverwrite:
-			(self findWeakOperatorsFor: operatorsDictionary).
-		allOperatorsDictionary addAllWithoutOverwrite:
-			(self findNullOperatorsFor: operatorsDictionary) ].
+		operatorsDictionary := operatorsDictionary asDictionary
+			                       addAllWithoutOverwrite:
+				                       (self findNullOperatorsFor:
+						                        operatorsDictionary);
+			                       yourself.
+		allOperatorsDictionary addAllWithoutOverwrite: operatorsDictionary ].
 
-	^ allOperatorsDictionary
+	^ self findWeakOperatorsFor: allOperatorsDictionary
 ]
 
 { #category : 'computing' }
