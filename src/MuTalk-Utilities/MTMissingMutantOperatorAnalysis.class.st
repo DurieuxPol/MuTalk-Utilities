@@ -1,12 +1,12 @@
 Class {
-	#name : 'MissingMutantOperatorAnalysis',
+	#name : 'MTMissingMutantOperatorAnalysis',
 	#superclass : 'Object',
 	#category : 'MuTalk-Utilities',
 	#package : 'MuTalk-Utilities'
 }
 
-{ #category : 'as yet unclassified' }
-MissingMutantOperatorAnalysis >> findMethodsWithoutMutationFor: aCollectionOfPackages [
+{ #category : 'computing' }
+MTMissingMutantOperatorAnalysis >> findMethodsWithoutMutationFor: aCollectionOfPackages [
 
 	| allMethods allMutatedMethods |
 	allMethods := self getAllMethodsFrom: aCollectionOfPackages.
@@ -17,8 +17,8 @@ MissingMutantOperatorAnalysis >> findMethodsWithoutMutationFor: aCollectionOfPac
 	^ allMethods reject: [ :method | allMutatedMethods includes: method ]
 ]
 
-{ #category : 'as yet unclassified' }
-MissingMutantOperatorAnalysis >> getAllMethodsFrom: aCollectionOfPackages [
+{ #category : 'computing' }
+MTMissingMutantOperatorAnalysis >> getAllMethodsFrom: aCollectionOfPackages [
 
 	| allMethods |
 	allMethods := OrderedCollection new.
@@ -26,16 +26,17 @@ MissingMutantOperatorAnalysis >> getAllMethodsFrom: aCollectionOfPackages [
 	^ allMethods
 ]
 
-{ #category : 'as yet unclassified' }
-MissingMutantOperatorAnalysis >> getMutatedMethodsFrom: aName [
+{ #category : 'computing' }
+MTMissingMutantOperatorAnalysis >> getMutatedMethodsFrom: aName [
 
 	| classesToMutate testCases analysis |
 	classesToMutate := aName asPackage definedClasses.
-	testCases := (aName , '-Tests') asPackage definedClasses select: #isTestCase.
+	testCases := (aName , '-Tests') asPackage definedClasses select:
+		             #isTestCase.
 
-	analysis := MutationTestingAnalysis
-		            testCasesFrom: testCases
-		            mutating: classesToMutate
-		            using: MutantOperator contentsAll.
+	analysis := MTAnalysis new
+		            classesToMutate: classesToMutate;
+		            testClasses: testCases;
+		            operators: MTMutantOperator contentsAll.
 	^ (analysis generateMutations groupedBy: #originalMethod) keys
 ]

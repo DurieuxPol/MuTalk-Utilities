@@ -1,12 +1,12 @@
 Class {
-	#name : 'MutantOperatorAnalysis',
+	#name : 'MTMutantOperatorAnalysis',
 	#superclass : 'Object',
 	#category : 'MuTalk-Utilities',
 	#package : 'MuTalk-Utilities'
 }
 
 { #category : 'computing' }
-MutantOperatorAnalysis >> allOperatorsFor: aCollectionOfPackages [
+MTMutantOperatorAnalysis >> allOperatorsFor: aCollectionOfPackages [
 
 	| allOperatorsDictionary |
 	allOperatorsDictionary := Dictionary new.
@@ -26,10 +26,10 @@ MutantOperatorAnalysis >> allOperatorsFor: aCollectionOfPackages [
 ]
 
 { #category : 'computing' }
-MutantOperatorAnalysis >> findOperatorsWithoutMutantsFor: aDictionary [
+MTMutantOperatorAnalysis >> findOperatorsWithoutMutantsFor: aDictionary [
 
 	| operatorsWithoutMutants |
-	operatorsWithoutMutants := (MutantOperator contentsAll collect:
+	operatorsWithoutMutants := (MTMutantOperator contentsAll collect:
 		                            #species) reject: [ :ope |
 		                           aDictionary keys includes: ope ].
 
@@ -39,19 +39,17 @@ MutantOperatorAnalysis >> findOperatorsWithoutMutantsFor: aDictionary [
 ]
 
 { #category : 'computing' }
-MutantOperatorAnalysis >> getMutantOperatorsDictionaryFor: aName [
+MTMutantOperatorAnalysis >> getMutantOperatorsDictionaryFor: aName [
 
 	| analysis dic classesToMutate testCases |
 	classesToMutate := aName asPackage definedClasses.
 	testCases := (aName , '-Tests') asPackage definedClasses select:
 		             #isTestCase.
 
-	analysis := MutationTestingAnalysis
-		            testCasesFrom: testCases
-		            mutating: classesToMutate
-		            using: MutantOperator contentsAll
-		            with: AllTestsMethodsRunningTestSelectionStrategy new
-		            with: AllMutantSelectionStrategy new.
+	analysis := MTAnalysis new
+		            classesToMutate: classesToMutate;
+		            testClasses: testCases;
+		            operators: MTMutantOperator contentsAll.
 
 	analysis generateMutations.
 
@@ -60,23 +58,23 @@ MutantOperatorAnalysis >> getMutantOperatorsDictionaryFor: aName [
 ]
 
 { #category : 'computing' }
-MutantOperatorAnalysis >> operatorsProducingOver: aNumber mutantsFor: aCollectionOfPackages [
+MTMutantOperatorAnalysis >> operatorsProducingOver: aNumber mutantsFor: aCollectionOfPackages [
 
 	^ self
 		  operatorsSelectedWith: [ :value | value >= aNumber ]
-		  For: aCollectionOfPackages
+		  for: aCollectionOfPackages
 ]
 
 { #category : 'computing' }
-MutantOperatorAnalysis >> operatorsProducingUnder: aNumber mutantsFor: aCollectionOfPackages [
+MTMutantOperatorAnalysis >> operatorsProducingUnder: aNumber mutantsFor: aCollectionOfPackages [
 
 	^ self
 		  operatorsSelectedWith: [ :value | value <= aNumber ]
-		  For: aCollectionOfPackages
+		  for: aCollectionOfPackages
 ]
 
 { #category : 'computing' }
-MutantOperatorAnalysis >> operatorsSelectedWith: aBlock For: aCollectionOfPackages [
+MTMutantOperatorAnalysis >> operatorsSelectedWith: aBlock for: aCollectionOfPackages [
 
 	^ (self allOperatorsFor: aCollectionOfPackages) select: aBlock
 ]
