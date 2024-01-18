@@ -22,7 +22,8 @@ MTMissingMutantOperatorAnalysis >> getAllMethodsFrom: aCollectionOfPackages [
 
 	| allMethods |
 	allMethods := OrderedCollection new.
-	aCollectionOfPackages do: [ :name | allMethods addAll: name asPackage methods ].
+	aCollectionOfPackages do: [ :name |
+		allMethods addAll: (name asPackage methods reject: #isExtension) ].
 	^ allMethods
 ]
 
