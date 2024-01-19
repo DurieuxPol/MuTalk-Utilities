@@ -2,7 +2,9 @@ Class {
 	#name : 'MTMatrixTest',
 	#superclass : 'TestCase',
 	#instVars : [
-		'matrix'
+		'matrix',
+		'trivialMutant',
+		'equivalentMutants'
 	],
 	#category : 'MuTalk-Utilities',
 	#package : 'MuTalk-Utilities'
@@ -11,22 +13,34 @@ Class {
 { #category : 'running' }
 MTMatrixTest >> setUp [
 
+	| mutations |
 	super setUp.
 	matrix := MTMatrix forAClass: MTAuxiliarClassForMatrix.
-	matrix build
+	matrix build.
+	mutations := matrix analysis mutations.
+	trivialMutant := Array with:
+		                 (matrix analysis mutations detect: [ :mut |
+			                  mut originalMethod
+			                  = (MTAuxiliarClassForMatrix >> #reset) ]).
+	equivalentMutants := Set
+		                     with: (mutations select: [ :mut |
+				                      mut originalMethod
+				                      = (MTAuxiliarClassForMatrix >> #minus:) ])
+				                     asSet
+		                     with: (mutations select: [ :mut |
+				                      mut originalMethod
+				                      = (MTAuxiliarClassForMatrix >> #plus:) ])
+				                     asSet
+]
+
+{ #category : 'tests' }
+MTMatrixTest >> testEquivalentMutants [
+
+	self assert: matrix equivalentMutants equals: equivalentMutants
 ]
 
 { #category : 'tests' }
 MTMatrixTest >> testTrivialMutants [
 
-	| mutant |
-	self assert: matrix getTrivialMutants size equals: 1.
-	mutant := matrix getTrivialMutants at: 1.
-	self
-		assert: (matrix getTrivialMutants at: 1)
-		equals: (MTMethodMutation
-				 for: MTAuxiliarClassForMatrix >> #reset
-				 using: MTRemoveCaretOperator new
-				 nodeNumber: 1
-				 ofClass: MTAuxiliarClassForMatrix)
+	self assert: matrix trivialMutants equals: trivialMutant
 ]

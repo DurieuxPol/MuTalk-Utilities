@@ -16,18 +16,6 @@ MTAuxiliarClassForMatrixTest >> setUp [
 ]
 
 { #category : 'running' }
-MTAuxiliarClassForMatrixTest >> testDecrement [
-
-	self assert: obj decrement equals: -1
-]
-
-{ #category : 'running' }
-MTAuxiliarClassForMatrixTest >> testIncrement [
-
-	self assert: obj increment equals: 1
-]
-
-{ #category : 'running' }
 MTAuxiliarClassForMatrixTest >> testMinus [
 
 	self assert: (obj minus: 10) equals: -10

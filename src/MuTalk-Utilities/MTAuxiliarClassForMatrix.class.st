@@ -8,20 +8,6 @@ Class {
 	#package : 'MuTalk-Utilities'
 }
 
-{ #category : 'accessing' }
-MTAuxiliarClassForMatrix >> decrement [
-
-	counter := counter - 1.
-	^ self reset
-]
-
-{ #category : 'accessing' }
-MTAuxiliarClassForMatrix >> increment [
-
-	counter := counter + 1.
-	^ self reset
-]
-
 { #category : 'initialization' }
 MTAuxiliarClassForMatrix >> initialize [
 

@@ -48,7 +48,7 @@ MTMatrix >> analysis [
 	^ analysis
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'comparing' }
 MTMatrix >> booleanCollection1: collection1 equalsBooleanCollection2: collection2 [
 
 	collection1 size = collection2 size ifFalse: [ ^ false ].
@@ -57,7 +57,7 @@ MTMatrix >> booleanCollection1: collection1 equalsBooleanCollection2: collection
 	^ true
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'building' }
 MTMatrix >> build [
 
 	self runAnalysis.
@@ -75,34 +75,8 @@ MTMatrix >> classesToMutate: aClass [
 	classesToMutate := aClass
 ]
 
-{ #category : 'as yet unclassified' }
-MTMatrix >> evaluationResultFor: aMutant [
-
-	^ (analysis mutantResults detect: [ :evaluationResult |
-		   evaluationResult mutant = aMutant ]) result
-]
-
-{ #category : 'as yet unclassified' }
-MTMatrix >> failuresFor: aMutant [
-
-	^ (self evaluationResultFor: aMutant) defects asOrderedCollection collect: [ :each |
-		  MTTestCaseReference for: each selector in: each class ]
-]
-
-{ #category : 'as yet unclassified' }
-MTMatrix >> generateMatrix [
-
-	| matrix |
-	self runAnalysis.
-	matrix  := RSDSM new.
-	matrix objectsX: mutations .
-	matrix objectsY: testCases .
-	matrix dependency: [ :mutation | (self at: mutation) ].
-	matrix open
-]
-
-{ #category : 'as yet unclassified' }
-MTMatrix >> getEquivalentMutants [
+{ #category : 'accessing' }
+MTMatrix >> equivalentMutants [
 
 	| equivalentMutants |
 	equivalentMutants := Set new.
@@ -118,14 +92,33 @@ MTMatrix >> getEquivalentMutants [
 	^ equivalentMutants
 ]
 
-{ #category : 'as yet unclassified' }
-MTMatrix >> getTrivialMutants [
+{ #category : 'computing' }
+MTMatrix >> evaluationResultFor: aMutant [
 
-	^ self keys select: [ :mutant |
-		  (self at: mutant) fold: [ :bool1 :bool2 | bool1 and: bool2 ] ]
+	^ (analysis mutantResults detect: [ :evaluationResult |
+		   evaluationResult mutant = aMutant ]) result
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'computing' }
+MTMatrix >> failuresFor: aMutant [
+
+	^ (self evaluationResultFor: aMutant) defects asOrderedCollection collect: [ :each |
+		  MTTestCaseReference for: each selector in: each class ]
+]
+
+{ #category : 'rendering' }
+MTMatrix >> generateMatrix [
+
+	| matrix |
+	self runAnalysis.
+	matrix  := RSDSM new.
+	matrix objectsX: mutations .
+	matrix objectsY: testCases .
+	matrix dependency: [ :mutation | (self at: mutation) ].
+	matrix open
+]
+
+{ #category : 'comparing' }
 MTMatrix >> mutant1: mutant1 equivalentToMutant2: mutant2 [
 
 	^ self
@@ -155,4 +148,11 @@ MTMatrix >> runAnalysis [
 MTMatrix >> testClasses: aTestClass [
 
 	testClasses := aTestClass
+]
+
+{ #category : 'accessing' }
+MTMatrix >> trivialMutants [
+
+	^ self keys select: [ :mutant |
+		  (self at: mutant) fold: [ :bool1 :bool2 | bool1 and: bool2 ] ]
 ]
