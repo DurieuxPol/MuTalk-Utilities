@@ -49,6 +49,15 @@ MTMatrix >> analysis [
 ]
 
 { #category : 'as yet unclassified' }
+MTMatrix >> booleanCollection1: collection1 equalsBooleanCollection2: collection2 [
+
+	collection1 size = collection2 size ifFalse: [ ^ false ].
+	1 to: collection1 size do: [ :i |
+		((collection1 at: i) eqv: (collection2 at: i)) ifFalse: [ ^ false ] ].
+	^ true
+]
+
+{ #category : 'as yet unclassified' }
 MTMatrix >> build [
 
 	self runAnalysis.
@@ -93,10 +102,41 @@ MTMatrix >> generateMatrix [
 ]
 
 { #category : 'as yet unclassified' }
+MTMatrix >> getEquivalentMutants [
+
+	| equivalentMutants |
+	equivalentMutants := Set new.
+
+	mutations do: [ :mutant1 |
+		| eqMutants |
+		eqMutants := Set with: mutant1.
+		mutations do: [ :mutant2 |
+			(self mutant1: mutant1 equivalentToMutant2: mutant2) ifTrue: [
+				eqMutants add: mutant2 ] ].
+		eqMutants size > 1 ifTrue: [ equivalentMutants add: eqMutants ] ].
+	
+	^ equivalentMutants
+]
+
+{ #category : 'as yet unclassified' }
 MTMatrix >> getTrivialMutants [
 
 	^ self keys select: [ :mutant |
 		  (self at: mutant) fold: [ :bool1 :bool2 | bool1 and: bool2 ] ]
+]
+
+{ #category : 'as yet unclassified' }
+MTMatrix >> mutant1: mutant1 equivalentToMutant2: mutant2 [
+
+	^ self
+		  booleanCollection1: (self at: mutant1)
+		  equalsBooleanCollection2: (self at: mutant2)
+]
+
+{ #category : 'accessing' }
+MTMatrix >> mutations: anObject [
+
+	mutations := anObject
 ]
 
 { #category : 'running' }
