@@ -2,12 +2,12 @@ Class {
 	#name : 'MTMatrix',
 	#superclass : 'Dictionary',
 	#instVars : [
-		'analysisResult',
 		'mutations',
 		'testCases',
 		'analysis',
 		'classesToMutate',
-		'testClasses'
+		'testClasses',
+		'numberOfFailuresDictionary'
 	],
 	#category : 'MuTalk-Utilities',
 	#package : 'MuTalk-Utilities'
@@ -54,6 +54,23 @@ MTMatrix >> booleanCollection1: collection1 equalsBooleanCollection2: collection
 	collection1 size = collection2 size ifFalse: [ ^ false ].
 	1 to: collection1 size do: [ :i |
 		((collection1 at: i) eqv: (collection2 at: i)) ifFalse: [ ^ false ] ].
+	^ true
+]
+
+{ #category : 'comparing' }
+MTMatrix >> booleanCollection1: collection1 includesBooleanCollection2: collection2 [
+
+	| counter |
+	counter := 1.
+	collection1 size = collection2 size ifFalse: [ ^ false ].
+	1 to: collection1 size do: [ :i |
+		((collection1 at: i) and: [ (collection2 at: i) not ])
+			ifTrue: [
+				counter = 1
+					ifFalse: [ ^ false ]
+					ifTrue: [ counter := 0 ] ]
+			ifFalse: [
+			((collection1 at: i) eqv: (collection2 at: i)) ifFalse: [ ^ false ] ] ].
 	^ true
 ]
 
@@ -118,12 +135,59 @@ MTMatrix >> generateMatrix [
 	matrix open
 ]
 
+{ #category : 'as yet unclassified' }
+MTMatrix >> includedMutants [
+
+	| includedMutants keys |
+	includedMutants := OrderedCollection new.
+	numberOfFailuresDictionary := self mutantsOrderedByNumberOfFailures.
+	keys := numberOfFailuresDictionary orderedKeys.
+	keys do: [ :i |
+		(numberOfFailuresDictionary at: i) do: [ :mutant |
+			includedMutants addAll: (self includedMutantsFor: mutant and: i) ] ].
+	^ includedMutants
+]
+
+{ #category : 'as yet unclassified' }
+MTMatrix >> includedMutantsFor: aMutant and: aNumber [
+
+	| includedMutants |
+	includedMutants := OrderedCollection new.
+	aNumber < 2 ifTrue: [ ^ includedMutants ].
+	(numberOfFailuresDictionary at: aNumber - 1) do: [ :mut |
+		(self mutant1: aMutant includesMutant2: mut) ifTrue: [
+			includedMutants add: aMutant -> mut ] ].
+	^ includedMutants
+]
+
 { #category : 'comparing' }
 MTMatrix >> mutant1: mutant1 equivalentToMutant2: mutant2 [
 
 	^ self
 		  booleanCollection1: (self at: mutant1)
 		  equalsBooleanCollection2: (self at: mutant2)
+]
+
+{ #category : 'comparing' }
+MTMatrix >> mutant1: mutant1 includesMutant2: mutant2 [
+
+	^ self
+		  booleanCollection1: (self at: mutant1)
+		  includesBooleanCollection2: (self at: mutant2)
+]
+
+{ #category : 'as yet unclassified' }
+MTMatrix >> mutantsIncluded [
+
+	| dic |
+	dic := self mutantsOrderedByNumberOfFailures
+]
+
+{ #category : 'as yet unclassified' }
+MTMatrix >> mutantsOrderedByNumberOfFailures [
+
+	^ self keys groupedBy: [ :mutant |
+		  ((self at: mutant) select: [ :bool | bool ]) size ]
 ]
 
 { #category : 'accessing' }
